@@ -6,7 +6,6 @@ import (
 	"github.com/service-kit/short-url/storage"
 	"go.uber.org/zap"
 	"sync"
-	"time"
 )
 
 type DataManager struct {
@@ -27,26 +26,14 @@ func GetInstance() *DataManager {
 }
 
 func (self *DataManager) InitManager() (err error) {
+	self.shortUrlMap = make(map[string]string)
+	self.originalUrlMap = make(map[string]string)
 	logger = log.GetInstance().GetLogger()
 	if nil != err {
 		return
 	}
 	self.loadShortUrl()
-	self.checkSyncDB()
 	return
-}
-
-func (self *DataManager) checkSyncDB() {
-	go func() {
-		for {
-			self.syncToDB()
-			time.Sleep(time.Second)
-		}
-	}()
-}
-
-func (self *DataManager) syncToDB() {
-
 }
 
 func (self *DataManager) loadShortUrl() error {
@@ -103,8 +90,8 @@ func (self *DataManager) AddNewShortUrl(original_url, short_url string) error {
 	short_url_info := new(common.ShortUrlInfo)
 	short_url_info.ShortUrl = short_url
 	short_url_info.OriginalUrl = original_url
-	_, err := storage.GetInstance().StorageShortUrlInfo(short_url_info)
-	if nil != err {
+	exist, err := storage.GetInstance().StorageShortUrlInfo(short_url_info)
+	if nil != err && !exist {
 		return err
 	}
 	return nil
