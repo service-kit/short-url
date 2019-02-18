@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/service-kit/short-url/config"
+	"github.com/service-kit/short-url/data"
 	"github.com/service-kit/short-url/http"
 	"github.com/service-kit/short-url/log"
 	"github.com/service-kit/short-url/redis"
@@ -47,6 +48,10 @@ func initManager() error {
 		return err
 	}
 	err = storage.GetInstance().InitManager()
+	if nil != err {
+		return err
+	}
+	err = data.GetInstance().InitManager()
 	if nil != err {
 		return err
 	}

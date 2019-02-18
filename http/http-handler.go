@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/service-kit/short-url/common"
+	"github.com/service-kit/short-url/data"
 	"github.com/service-kit/short-url/storage"
 	"github.com/service-kit/short-url/util"
 	"go.uber.org/zap"
@@ -53,16 +54,17 @@ func handleShortUrlRequest(w http.ResponseWriter, r *http.Request) {
 		logger.Info("use system create short url")
 		short_url = util.BuildShortUrl(original_url)
 	} else {
-		res, _ := storage.GetInstance().GetOriginalUrl(short_url)
+		res, _ := data.GetInstance().GetOriginalUrl(short_url)
 		if original_url != res {
 			w.Write([]byte(short_url + " has exist"))
 			return
 		}
 	}
-	short_url_info := new(common.ShortUrlInfo)
-	short_url_info.OriginalUrl = original_url
-	short_url_info.ShortUrl = short_url
-	storage.GetInstance().StorageShortUrlInfo(short_url_info)
+	err := data.GetInstance().AddNewShortUrl(original_url, short_url)
+	if nil != err {
+		w.Write([]byte(short_url + " add err"))
+		return
+	}
 	logger.Info("register", zap.Any("param", form))
 	fullShortUrl := GetInstance().shortUrlHeader + short_url
 	jpgData, err := util.BuildQRCodeJpg(fullShortUrl)

@@ -167,17 +167,17 @@ func (self *StorageManager) StorageShortUrlInfo(short_url *common.ShortUrlInfo) 
 	if self.mysqlSwitch {
 		exist := self.exist(short_url)
 		if exist {
-			return true, errors.New("account exist")
+			return true, errors.New("short url exist")
 		}
 		err := self.insert(short_url)
 		if nil != err {
-			logger.Error("storage account to db err", zap.Error(err))
+			logger.Error("storage short url to db err", zap.Error(err))
 			return false, err
 		}
 	}
 	original_url, _ := redis.GetInstance().GetStringValue(self.generateShortUrlKey(short_url.ShortUrl))
 	if "" != original_url {
-		return false, errors.New("account exist")
+		return false, errors.New("short url exist")
 	}
 	return false, redis.GetInstance().SetStringValue(self.generateShortUrlKey(short_url.ShortUrl), short_url.OriginalUrl)
 }
